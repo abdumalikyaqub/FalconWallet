@@ -13,8 +13,8 @@ public class Transaction
     public DateTime CreatedOn { get; private set; }
 
     public static Transaction CreateDepositTransaction(Guid walletId,
-                                                       decimal amount,
-                                                       string? description)
+        decimal amount,
+        string? description)
     {
         Transaction transaction = new Transaction();
         transaction.WalletId = walletId;
@@ -27,8 +27,8 @@ public class Transaction
     }
 
     public static Transaction CreateWithdrawTransaction(Guid walletId,
-                                                         decimal amount,
-                                                         string? description)
+        decimal amount,
+        string? description)
     {
         Transaction transaction = new Transaction();
         transaction.WalletId = walletId;

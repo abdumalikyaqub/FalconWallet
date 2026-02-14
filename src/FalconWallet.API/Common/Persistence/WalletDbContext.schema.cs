@@ -8,7 +8,7 @@ public static class WalletDbContextSchema
 {
     public const string DefaultSchema = "wallet";
     public const string DefaultConnectionStringName = "WalletDbContextConnection";
-    public const string DefaultDecimalColumnType = "decimal(18,6)";
+    public const string DefaultDecimalColumnType = "numeric(18,6)";
 
     public static class Currency
     {

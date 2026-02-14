@@ -10,6 +10,7 @@ public class Currency
     public decimal ConversionRate { get; private set; }
     public DateTime LastModifyOnUtc { get; private set; }
     public ICollection<Wallet>? Wallets { get; private set; }
+
     public void UpdateConversionRate(decimal conversionRate)
     {
         ConversionRate = conversionRate;
@@ -17,8 +18,8 @@ public class Currency
     }
 
     public static Currency Create(string name,
-                                  string code,
-                                  Decimal conversionRate)
+        string code,
+        Decimal conversionRate)
     {
         Currency currency = new Currency();
         currency.Name = name;

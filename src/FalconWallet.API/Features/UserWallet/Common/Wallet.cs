@@ -14,9 +14,10 @@ public class Wallet
     public Currency Currency { get; private set; } = null!;
     public WalletStatus Status { get; private set; }
     public ICollection<Transaction>? Transactions { get; private set; }
+
     public static Wallet Create(Guid userId,
-                                string? title,
-                                int currencyId)
+        string? title,
+        int currencyId)
     {
         Wallet wallet = new Wallet();
         wallet.UserId = userId;

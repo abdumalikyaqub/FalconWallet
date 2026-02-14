@@ -18,25 +18,22 @@ var builder = WebApplication.CreateBuilder(args);
 
 var domainAssemblies = AppDomain.CurrentDomain.GetAssemblies();
 
-// Add services to the container.
 builder.Services.AddDbContext<WalletDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString(WalletDbContextSchema.DefaultConnectionStringName)));
+    options.UseNpgsql(builder.Configuration.GetConnectionString(WalletDbContextSchema.DefaultConnectionStringName)));
 
 builder.Services.AddScoped<CurrencyService>();
 builder.Services.AddScoped<WalletService>();
 builder.Services.AddScoped<TransactionService>();
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddValidatorsFromAssemblies(domainAssemblies);
 
-builder.Services.AddAutoMapper(cfg => { }, domainAssemblies);
+builder.Services.AddAutoMapper(_ => { }, domainAssemblies);
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

@@ -2,12 +2,16 @@ version: '3.4'
 
 services:
   db:
-    image: "mcr.microsoft.com/mssql/server:2019-latest"
+    image: postgres:16
     environment:
-      - ACCEPT_EULA=Y
-      - SA_PASSWORD=${SA_PASSWORD}
+      - POSTGRES_DB=FalconWallet
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     ports:
-      - "1433:1433"
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # постоянное хранилище
+
   falconwallet.api:
     image: ${DOCKER_REGISTRY-}falconwalletapi
     build:
@@ -15,3 +19,5 @@ services:
       dockerfile: src/FalconWallet.API/Dockerfile
     depends_on:
       - db
+    environment:
+      - ConnectionStrings__WalletDbContextConnection=Host=db;Port=5432;Database=FalconWallet;Username=postgres;Password=${POSTGRES_PASSWORD}

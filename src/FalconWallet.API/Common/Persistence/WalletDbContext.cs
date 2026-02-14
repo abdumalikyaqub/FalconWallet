@@ -20,6 +20,7 @@ public class WalletDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.HasDefaultSchema(WalletDbContextSchema.DefaultSchema);
 
         var assembly = typeof(IAssemblyMarker).Assembly;
         modelBuilder.ApplyConfigurationsFromAssembly(assembly);
