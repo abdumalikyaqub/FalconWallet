@@ -2,6 +2,7 @@ using AutoMapper;
 using FalconWallet.API.Common;
 using FalconWallet.API.Features.Transactions.Common;
 using Microsoft.AspNetCore.Mvc;
+using FalconWallet.API.Features.Transactions.Common.Interfaces;
 
 namespace FalconWallet.API.Features.Transactions.SendToWallet;
 
@@ -11,7 +12,7 @@ public static class Endpoint
     {
         endpointRouteBuilder.MapPost("/transactions/send", async (
                 [FromBody] SendToWalletRequest request,
-                TransactionService transactionService,
+                ITransactionService transactionService,
                 CancellationToken cancellationToken) =>
             {
                 var result = await transactionService.SendToWalletAsync(

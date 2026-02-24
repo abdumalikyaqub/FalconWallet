@@ -1,5 +1,6 @@
 ﻿using FalconWallet.API.Common;
 using FalconWallet.API.Features.MultiCurrency.Common;
+using FalconWallet.API.Features.MultiCurrency.Common.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FalconWallet.API.Features.MultiCurrency.UpdateConversionRate;
@@ -11,7 +12,7 @@ public static class Endpoint
         endpointRouteBuilder.MapPatch("/currency/{currencyId:required}", async (
             [FromBody] UpdateConversionRateRequest request,
             [FromRoute(Name = "currencyId")] int id,
-            CurrencyService currencyService,
+            ICurrencyService currencyService,
             CancellationToken cancellationToken) =>
         {
             await currencyService.UpdateConversionRateAsync(id, request.ConversionRate, cancellationToken);

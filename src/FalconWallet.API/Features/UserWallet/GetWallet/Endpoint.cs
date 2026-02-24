@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FalconWallet.API.Features.UserWallet.Common;
 using Microsoft.AspNetCore.Mvc;
+using FalconWallet.API.Features.UserWallet.Common.Interfaces;
 
 namespace FalconWallet.API.Features.UserWallet.GetWallet;
 
@@ -10,7 +11,7 @@ public static class Endpoint
     {
         endpointRouteBuilder.MapGet("/wallet/{walletId:guid:required}", async (
             [FromRoute(Name = "walletId")] Guid walletId,
-            WalletService walletService,
+            IWalletService walletService,
             IMapper mapper,
             CancellationToken cancellationToken) =>
         {
