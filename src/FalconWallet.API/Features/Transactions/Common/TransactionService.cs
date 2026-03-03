@@ -3,7 +3,6 @@ using FalconWallet.API.Common.Persistence;
 using FalconWallet.API.Features.UserWallet.Common;
 using FalconWallet.API.Features.UserWallet.Common.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System.Threading;
 using FalconWallet.API.Features.Transactions.Common.Interfaces;
 
 namespace FalconWallet.API.Features.Transactions.Common;
