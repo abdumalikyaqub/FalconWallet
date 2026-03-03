@@ -3,7 +3,6 @@ using FalconWallet.API.Common.Persistence;
 using FalconWallet.API.Features.UserWallet.Common;
 using FalconWallet.API.Features.UserWallet.Common.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System.Threading;
 using FalconWallet.API.Features.Transactions.Common.Interfaces;
 
 namespace FalconWallet.API.Features.Transactions.Common;
@@ -44,7 +43,7 @@ internal sealed class TransactionService(IWalletService walletService,WalletDbCo
         }
     }
 
-    public async Task WithdrawAsync(Guid walletId,
+    internal async Task WithdrawAsync(Guid walletId,
                                       decimal amount,
                                       string? description,
                                       CancellationToken cancellationToken)
@@ -75,7 +74,7 @@ internal sealed class TransactionService(IWalletService walletService,WalletDbCo
         }
     }
 
-     public async Task ValidateTransactionAsync(Guid walletId,
+     private async Task ValidateTransactionAsync(Guid walletId,
                                                 decimal amount,
                                                 CancellationToken cancellationToken)
     {

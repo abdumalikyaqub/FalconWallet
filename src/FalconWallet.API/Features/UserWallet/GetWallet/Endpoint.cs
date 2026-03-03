@@ -11,7 +11,7 @@ public static class Endpoint
     {
         endpointRouteBuilder.MapGet("/wallet/{walletId:guid:required}", async (
             [FromRoute(Name = "walletId")] Guid walletId,
-            IWalletService walletService,
+            WalletService walletService,
             IMapper mapper,
             CancellationToken cancellationToken) =>
         {

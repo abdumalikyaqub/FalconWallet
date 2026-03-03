@@ -12,7 +12,7 @@ public static class Endpoint
     {
         endpointRouteBuilder.MapPost("/transaction/withdraw", async (
             [FromBody] WithdrawFromWalletRequest request,
-            ITransactionService transactionService,
+            TransactionService transactionService,
             CancellationToken cancellationToken) =>
         {
             await transactionService.WithdrawAsync(request.WalletId,

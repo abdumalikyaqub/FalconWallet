@@ -8,16 +8,6 @@ public interface ITransactionService
         string? description,
         CancellationToken cancellationToken);
 
-     Task WithdrawAsync(Guid walletId,
-        decimal amount,
-        string? description,
-        CancellationToken cancellationToken);
-
-
-      Task ValidateTransactionAsync(Guid walletId,
-         decimal amount,
-         CancellationToken cancellationToken);
-
       Task<List<Transaction>> GetTransactionsForWalletAsync(Guid walletId,
           CancellationToken cancellationToken);
 
