@@ -1,13 +1,16 @@
 using FalconWallet.API.Common.Persistence;
 using FalconWallet.API.Features.MultiCurrency.Common;
+using FalconWallet.API.Features.MultiCurrency.Common.Interfaces;
 using FalconWallet.API.Features.MultiCurrency.CreateCurrency;
 using FalconWallet.API.Features.MultiCurrency.UpdateConversionRate;
 using FalconWallet.API.Features.Transactions.Common;
+using FalconWallet.API.Features.Transactions.Common.Interfaces;
 using FalconWallet.API.Features.Transactions.DepositToWallet;
 using FalconWallet.API.Features.Transactions.SendToWallet;
 using FalconWallet.API.Features.Transactions.WalletHistory;
 using FalconWallet.API.Features.Transactions.WithdrawFromWallet;
 using FalconWallet.API.Features.UserWallet.Common;
+using FalconWallet.API.Features.UserWallet.Common.Interfaces;
 using FalconWallet.API.Features.UserWallet.CreateWallet;
 using FalconWallet.API.Features.UserWallet.GetWallet;
 using FalconWallet.API.Features.UserWallet.SuspendWallet;
@@ -22,9 +25,9 @@ var domainAssemblies = AppDomain.CurrentDomain.GetAssemblies();
 builder.Services.AddDbContext<WalletDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString(WalletDbContextSchema.DefaultConnectionStringName)));
 
-builder.Services.AddScoped<CurrencyService>();
-builder.Services.AddScoped<WalletService>();
-builder.Services.AddScoped<TransactionService>();
+builder.Services.AddScoped<ICurrencyService, CurrencyService>();
+builder.Services.AddScoped<IWalletService, WalletService>();
+builder.Services.AddScoped<ITransactionService, TransactionService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

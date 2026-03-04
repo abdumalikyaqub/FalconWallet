@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FalconWallet.API.Common;
 using FalconWallet.API.Features.UserWallet.Common;
+using FalconWallet.API.Features.UserWallet.Common.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FalconWallet.API.Features.UserWallet.CreateWallet;
@@ -11,7 +12,7 @@ public static class Endpoint
     {
         endpointRouteBuilder.MapPost("/wallet/", async (
             [FromBody] CreateWalletRequest request,
-            WalletService walletService,
+            IWalletService walletService,
             IMapper mapper,
             CancellationToken cancellationToken) =>
         {
