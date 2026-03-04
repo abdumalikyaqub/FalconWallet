@@ -7,11 +7,8 @@ using FalconWallet.API.Features.Transactions.Common.Interfaces;
 
 namespace FalconWallet.API.Features.Transactions.Common;
 
-internal sealed class TransactionService(IWalletService walletService,WalletDbContext walletDbContext):ITransactionService
+internal sealed class TransactionService(IWalletService _walletService,WalletDbContext _walletDbContext):ITransactionService
 {
-    private readonly IWalletService _walletService = walletService;
-    private readonly WalletDbContext _walletDbContext = walletDbContext;
-
     public async Task DepositAsync(Guid walletId,
                                    decimal amount,
                                    string? description,
