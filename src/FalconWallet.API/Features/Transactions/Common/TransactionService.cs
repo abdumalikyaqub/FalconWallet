@@ -1,14 +1,16 @@
-﻿using FalconWallet.API.Features.Transactions.SendToWallet;
+using FalconWallet.API.Features.Transactions.SendToWallet;
 using FalconWallet.API.Common.Persistence;
 using FalconWallet.API.Features.UserWallet.Common;
 using FalconWallet.API.Features.UserWallet.Common.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Threading;
 using FalconWallet.API.Features.Transactions.Common.Interfaces;
 
 namespace FalconWallet.API.Features.Transactions.Common;
 
 internal sealed class TransactionService(IWalletService _walletService,WalletDbContext _walletDbContext):ITransactionService
 {
+    
     public async Task DepositAsync(Guid walletId,
                                    decimal amount,
                                    string? description,
@@ -40,7 +42,7 @@ internal sealed class TransactionService(IWalletService _walletService,WalletDbC
         }
     }
 
-    internal async Task WithdrawAsync(Guid walletId,
+    public async Task WithdrawAsync(Guid walletId,
                                       decimal amount,
                                       string? description,
                                       CancellationToken cancellationToken)
@@ -71,7 +73,7 @@ internal sealed class TransactionService(IWalletService _walletService,WalletDbC
         }
     }
 
-     private async Task ValidateTransactionAsync(Guid walletId,
+     public async Task ValidateTransactionAsync(Guid walletId,
                                                 decimal amount,
                                                 CancellationToken cancellationToken)
     {

@@ -1,29 +1,33 @@
 ﻿using FalconWallet.API.Common.Persistence;
 using FalconWallet.API.Features.MultiCurrency.Common;
-using FalconWallet.API.Features.UserWallet.Common;
-using FalconWallet.API.Features.UserWallet.Common.Interfaces;
 using FalconWallet.API.Features.MultiCurrency.Common.Interfaces;
+using FalconWallet.API.Features.UserWallet.Common.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace FalconWallet.API.Features.UserWallet.Common;
 
-public class WalletService(ICurrencyService currencyService,
-                           WalletDbContext walletDbContext):IWalletService
+public class WalletService(
+    ICurrencyService currencyService,
+    WalletDbContext walletDbContext) : IWalletService
 {
     private readonly ICurrencyService _currencyService = currencyService;
     private readonly WalletDbContext _walletDbContext = walletDbContext;
 
-    public async Task<Wallet> CreateAsync(Guid userId,
-                                          string? title,
-                                          int currencyId,
-                                          CancellationToken cancellationToken)
+    public async Task<Wallet> CreateAsync(
+        Guid userId,
+        string? title,
+        int currencyId,
+        CancellationToken cancellationToken)
     {
         if (!await _currencyService.HasByIdAsync(currencyId, cancellationToken))
         {
             throw new CurrencyNotFoundException(currencyId);
         }
 
-        if (await _walletDbContext.Wallets.AnyAsync(x => x.UserId == userId && x.CurrencyId == currencyId))
+        bool exists = await _walletDbContext.Wallets
+            .AnyAsync(x => x.UserId == userId && x.CurrencyId == currencyId, cancellationToken);
+
+        if (exists)
         {
             throw new WalletForUserAlreadyExistException(currencyId, userId);
         }
@@ -36,7 +40,10 @@ public class WalletService(ICurrencyService currencyService,
         return wallet;
     }
 
-    public async Task UpdateTitleAsync(Guid walletId, string? title, CancellationToken cancellationToken = default)
+    public async Task UpdateTitleAsync(
+        Guid walletId,
+        string? title,
+        CancellationToken cancellationToken = default)
     {
         Wallet wallet = await GetWalletFromDbAsync(walletId, cancellationToken);
 
@@ -54,23 +61,21 @@ public class WalletService(ICurrencyService currencyService,
 
     public async Task<bool> IsWalletAvailable(Guid walletId, CancellationToken cancellationToken)
     {
-        Wallet? wallet = await GetWalletFromDbAsync(walletId, cancellationToken);
-
+        Wallet wallet = await GetWalletFromDbAsync(walletId, cancellationToken);
         return wallet.Status == WalletStatus.Active;
     }
 
     public async Task DepositAsync(Guid walletId, decimal amount, CancellationToken cancellationToken)
     {
-        Wallet? wallet = await GetWalletFromDbAsync(walletId, cancellationToken);
+        Wallet wallet = await GetWalletFromDbAsync(walletId, cancellationToken);
 
         wallet.IncreaseBalance(amount);
-
         await _walletDbContext.SaveChangesAsync(cancellationToken);
     }
 
     public async Task WithdrawAsync(Guid walletId, decimal amount, CancellationToken cancellationToken)
     {
-        Wallet? wallet = await GetWalletFromDbAsync(walletId, cancellationToken);
+        Wallet wallet = await GetWalletFromDbAsync(walletId, cancellationToken);
 
         if (wallet.Balance - amount < 0)
         {
@@ -78,7 +83,6 @@ public class WalletService(ICurrencyService currencyService,
         }
 
         wallet.DecreaseBalance(amount);
-
         await _walletDbContext.SaveChangesAsync(cancellationToken);
     }
 
@@ -87,10 +91,12 @@ public class WalletService(ICurrencyService currencyService,
         return await GetWalletWithCurrencyFromDbAsync(walletId, cancellationToken);
     }
 
-    private async Task<Wallet> GetWalletFromDbAsync(Guid walletId, CancellationToken cancellationToken)
+    public async Task<Wallet> GetWalletWithCurrencyFromDbAsync(Guid walletId, CancellationToken cancellationToken)
     {
         Wallet? wallet = await _walletDbContext.Wallets
-                                               .FirstOrDefaultAsync(x => x.Id == walletId, cancellationToken);
+            .Include(w => w.Currency)
+            .FirstOrDefaultAsync(x => x.Id == walletId, cancellationToken);
+
         if (wallet == null)
         {
             throw new WalletNotFoundException(walletId);
@@ -99,11 +105,11 @@ public class WalletService(ICurrencyService currencyService,
         return wallet;
     }
 
-    public async Task<Wallet> GetWalletWithCurrencyFromDbAsync(Guid walletId, CancellationToken cancellationToken)
+    private async Task<Wallet> GetWalletFromDbAsync(Guid walletId, CancellationToken cancellationToken)
     {
         Wallet? wallet = await _walletDbContext.Wallets
-                                               .Include(w => w.Currency)
-                                               .FirstOrDefaultAsync(x => x.Id == walletId, cancellationToken);
+            .FirstOrDefaultAsync(x => x.Id == walletId, cancellationToken);
+
         if (wallet == null)
         {
             throw new WalletNotFoundException(walletId);
