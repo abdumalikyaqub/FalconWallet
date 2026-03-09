@@ -75,14 +75,13 @@ public class WalletService(
 
     public async Task WithdrawAsync(Guid walletId, decimal amount, CancellationToken cancellationToken)
     {
-        Wallet wallet = await GetWalletFromDbAsync(walletId, cancellationToken);
+        Wallet wallet = await GetWalletForUpdateAsync(walletId, cancellationToken);
 
-        if (wallet.Balance - amount < 0)
-        {
+        if (wallet.Balance < amount)
             throw new InsufficientFundsInWalletException(walletId);
-        }
 
         wallet.DecreaseBalance(amount);
+        
         await _walletDbContext.SaveChangesAsync(cancellationToken);
     }
 
@@ -114,6 +113,22 @@ public class WalletService(
         {
             throw new WalletNotFoundException(walletId);
         }
+
+        return wallet;
+    }
+    public async Task<Wallet> GetWalletForUpdateAsync(Guid walletId, CancellationToken ct)
+    {
+        var wallet = await _walletDbContext.Wallets
+            .FromSqlInterpolated($"""
+                                      SELECT * 
+                                      FROM wallets 
+                                      WHERE id = {walletId}
+                                      FOR UPDATE
+                                  """)
+            .FirstOrDefaultAsync(ct);
+        
+        if (wallet is null)
+            throw new WalletNotFoundException(walletId);
 
         return wallet;
     }

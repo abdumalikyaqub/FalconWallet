@@ -1,4 +1,5 @@
 using FalconWallet.API.Common.Persistence;
+using FalconWallet.API.Common.Persistence.Interfaces;
 using FalconWallet.API.Features.MultiCurrency.Common;
 using FalconWallet.API.Features.MultiCurrency.Common.Interfaces;
 using FalconWallet.API.Features.MultiCurrency.CreateCurrency;
@@ -22,8 +23,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 var domainAssemblies = AppDomain.CurrentDomain.GetAssemblies();
 
-builder.Services.AddDbContext<WalletDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString(WalletDbContextSchema.DefaultConnectionStringName)));
+builder.Services.AddDbContext<IWalletDbContext, WalletDbContext>(options =>
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString(WalletDbContextSchema.DefaultConnectionStringName)));
 
 builder.Services.AddScoped<ICurrencyService, CurrencyService>();
 builder.Services.AddScoped<IWalletService, WalletService>();

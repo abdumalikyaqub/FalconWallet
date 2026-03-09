@@ -1,14 +1,15 @@
 using FalconWallet.API.Features.Transactions.SendToWallet;
-using FalconWallet.API.Common.Persistence;
+using FalconWallet.API.Common.Persistence.Interfaces;
 using FalconWallet.API.Features.UserWallet.Common;
 using FalconWallet.API.Features.UserWallet.Common.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System.Threading;
 using FalconWallet.API.Features.Transactions.Common.Interfaces;
 
 namespace FalconWallet.API.Features.Transactions.Common;
 
-internal sealed class TransactionService(IWalletService _walletService,WalletDbContext _walletDbContext):ITransactionService
+internal sealed class TransactionService(
+    IWalletService walletService,
+    IWalletDbContext walletDbContext):ITransactionService
 {
     
     public async Task DepositAsync(Guid walletId,
@@ -18,20 +19,19 @@ internal sealed class TransactionService(IWalletService _walletService,WalletDbC
     {
         await ValidateTransactionAsync(walletId, amount, cancellationToken);
         
-        var dbTransaction = await _walletDbContext.Database.BeginTransactionAsync(cancellationToken);
+        await using var dbTransaction = await walletDbContext.BeginTransactionAsync(cancellationToken);
 
         try
         {
-            await _walletService.DepositAsync(walletId, amount, cancellationToken);
+            await walletService.DepositAsync(walletId, amount, cancellationToken);
 
             Transaction depositTransaction = Transaction.CreateDepositTransaction(walletId,
                                                                                   amount,
                                                                                   description);
 
-            await _walletDbContext.Transactions.AddAsync(depositTransaction,
-                                                        cancellationToken);
+            await walletDbContext.Transactions.AddAsync(depositTransaction, cancellationToken);
 
-            await _walletDbContext.SaveChangesAsync(cancellationToken);
+            await walletDbContext.SaveChangesAsync(cancellationToken);
 
             await dbTransaction.CommitAsync(cancellationToken);
         }
@@ -49,20 +49,19 @@ internal sealed class TransactionService(IWalletService _walletService,WalletDbC
     {
         await ValidateTransactionAsync(walletId, amount, cancellationToken);
 
-        var dbTransaction = await _walletDbContext.Database.BeginTransactionAsync(cancellationToken);
+        await using var dbTransaction = await walletDbContext.BeginTransactionAsync(cancellationToken);
 
         try
         {
-            await _walletService.WithdrawAsync(walletId, amount, cancellationToken);
+            await walletService.WithdrawAsync(walletId, amount, cancellationToken);
 
             Transaction withdrawTransaction = Transaction.CreateWithdrawTransaction(walletId,
                                                                                     amount,
                                                                                     description);
 
-            await _walletDbContext.Transactions.AddAsync(withdrawTransaction,
-                                                        cancellationToken);
+            await walletDbContext.Transactions.AddAsync(withdrawTransaction, cancellationToken);
 
-            await _walletDbContext.SaveChangesAsync(cancellationToken);
+            await walletDbContext.SaveChangesAsync(cancellationToken);
 
             await dbTransaction.CommitAsync(cancellationToken);
         }
@@ -77,7 +76,7 @@ internal sealed class TransactionService(IWalletService _walletService,WalletDbC
                                                 decimal amount,
                                                 CancellationToken cancellationToken)
     {
-        if (!await _walletService.IsWalletAvailable(walletId, cancellationToken))
+        if (!await walletService.IsWalletAvailable(walletId, cancellationToken))
         {
             throw new WalletNotAvailableException(walletId);
         }
@@ -91,14 +90,15 @@ internal sealed class TransactionService(IWalletService _walletService,WalletDbC
     public async Task<List<Transaction>> GetTransactionsForWalletAsync(Guid walletId,
                                                                        CancellationToken cancellationToken)
     {
-        if (!await _walletService.IsWalletAvailable(walletId, cancellationToken))
+        if (!await walletService.IsWalletAvailable(walletId, cancellationToken))
         {
             throw new WalletNotAvailableException(walletId);
         }
 
-        return await _walletDbContext.Transactions.Where(x => x.WalletId == walletId)
-                                                  .OrderByDescending(x => x.CreatedOn)
-                                                  .ToListAsync(cancellationToken);
+        return await walletDbContext.Transactions
+            .Where(x => x.WalletId == walletId)
+            .OrderByDescending(x => x.CreatedOn)
+            .ToListAsync(cancellationToken);
     }
     
     public async Task<SendToWalletResponse> SendToWalletAsync(
@@ -108,17 +108,15 @@ internal sealed class TransactionService(IWalletService _walletService,WalletDbC
         string? description,
         CancellationToken cancellationToken)
     {
-
         await ValidateTransactionAsync(fromWalletId, amount, cancellationToken);
         await ValidateTransactionAsync(toWalletId, amount, cancellationToken);
         
-        await using var dbTransaction = await _walletDbContext.Database.BeginTransactionAsync(cancellationToken);
+        await using var dbTransaction = await walletDbContext.BeginTransactionAsync(cancellationToken);
 
         try
         {
-            
-            await _walletService.WithdrawAsync(fromWalletId, amount, cancellationToken);
-            await _walletService.DepositAsync(toWalletId, amount, cancellationToken);
+            await walletService.WithdrawAsync(fromWalletId, amount, cancellationToken);
+            await walletService.DepositAsync(toWalletId, amount, cancellationToken);
 
             var withdrawTx = Transaction.CreateWithdrawTransaction(
                 fromWalletId,
@@ -130,8 +128,8 @@ internal sealed class TransactionService(IWalletService _walletService,WalletDbC
                 amount,
                 $"Received from wallet {fromWalletId}. {description}".Trim());
 
-            await _walletDbContext.Transactions.AddRangeAsync(new[] { withdrawTx, depositTx }, cancellationToken);
-            await _walletDbContext.SaveChangesAsync(cancellationToken);
+            await walletDbContext.Transactions.AddRangeAsync(new[] { withdrawTx, depositTx }, cancellationToken);
+            await walletDbContext.SaveChangesAsync(cancellationToken);
 
             await dbTransaction.CommitAsync(cancellationToken);
 
@@ -149,4 +147,5 @@ internal sealed class TransactionService(IWalletService _walletService,WalletDbC
             throw;
         }
     }
+    
 }
