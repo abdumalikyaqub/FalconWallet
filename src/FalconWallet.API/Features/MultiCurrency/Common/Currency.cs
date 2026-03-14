@@ -19,7 +19,7 @@ public class Currency
 
     public static Currency Create(string name,
         string code,
-        Decimal conversionRate)
+        decimal conversionRate)
     {
         Currency currency = new Currency();
         currency.Name = name;
