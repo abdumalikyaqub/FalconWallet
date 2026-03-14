@@ -1,6 +1,7 @@
 ﻿using FalconWallet.API.Common;
 using FalconWallet.API.Features.UserWallet.Common;
 using Microsoft.AspNetCore.Mvc;
+using FalconWallet.API.Features.UserWallet.Common.Interfaces;
 
 namespace FalconWallet.API.Features.UserWallet.UpdateTitle;
 
@@ -11,7 +12,7 @@ public static class Endpoint
         endpointRouteBuilder.MapPatch("/wallet/{walletId:guid:required}", async (
             [FromBody] UpdateTitleRequest request,
             [FromRoute(Name = "walletId")] Guid walletId,            
-            WalletService walletService,
+            IWalletService walletService,
             CancellationToken cancellationToken) =>
         {
             await walletService.UpdateTitleAsync(walletId, request.Title, cancellationToken);

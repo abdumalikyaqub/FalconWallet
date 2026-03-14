@@ -1,9 +1,10 @@
 ﻿using FalconWallet.API.Common.Persistence;
+using FalconWallet.API.Features.MultiCurrency.Common.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace FalconWallet.API.Features.MultiCurrency.Common;
 
-public class CurrencyService(WalletDbContext walletDbContext)
+public class CurrencyService(WalletDbContext walletDbContext):ICurrencyService
 {
     private readonly WalletDbContext _walletDbContext = walletDbContext;
 

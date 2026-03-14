@@ -1,5 +1,6 @@
 ﻿using FalconWallet.API.Features.UserWallet.Common;
 using Microsoft.AspNetCore.Mvc;
+using FalconWallet.API.Features.UserWallet.Common.Interfaces;
 
 namespace FalconWallet.API.Features.UserWallet.SuspendWallet;
 
@@ -9,7 +10,7 @@ public static class Endpoint
     {
         endpointRouteBuilder.MapPatch("/wallet/{walletId:guid:required}/suspend", async (
             [FromRoute(Name = "walletId")] Guid walletId,
-            WalletService walletService,
+            IWalletService walletService,
             CancellationToken cancellationToken) =>
         {
             await walletService.SuspendWalletAsync(walletId, cancellationToken);

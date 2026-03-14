@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FalconWallet.API.Features.UserWallet.Common;
 using Microsoft.AspNetCore.Mvc;
+using FalconWallet.API.Features.UserWallet.Common.Interfaces;
 
 namespace FalconWallet.API.Features.UserWallet.GetWallet;
 

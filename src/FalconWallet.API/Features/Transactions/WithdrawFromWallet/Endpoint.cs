@@ -1,6 +1,7 @@
 ﻿using FalconWallet.API.Common;
 using FalconWallet.API.Features.Transactions.Common;
 using FalconWallet.API.Features.Transactions.DepositToWallet;
+using FalconWallet.API.Features.Transactions.Common.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FalconWallet.API.Features.Transactions.WithdrawFromWallet;

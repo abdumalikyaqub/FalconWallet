@@ -2,6 +2,7 @@
 using FalconWallet.API.Features.Transactions.Common;
 using FalconWallet.API.Features.Transactions.DepositToWallet;
 using Microsoft.AspNetCore.Mvc;
+using FalconWallet.API.Features.Transactions.Common.Interfaces;
 
 namespace FalconWallet.API.Features.Transactions.WalletHistory;
 
@@ -11,7 +12,7 @@ public static class Endpoint
     {
         endpointRouteBuilder.MapGet("/transaction/{walletId:guid:required}", async (
             [FromRoute(Name = "walletId")] Guid walletId,
-            TransactionService transactionService,
+            ITransactionService transactionService,
             IMapper mapper,
             CancellationToken cancellationToken) =>
         {
