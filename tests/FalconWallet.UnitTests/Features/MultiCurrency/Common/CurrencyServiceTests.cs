@@ -1,7 +1,7 @@
 using FalconWallet.API.Common.Persistence;
 using FalconWallet.API.Features.MultiCurrency.Common;
-using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using FluentAssertions;
 
 namespace FalconWallet.UnitTests.Features.MultiCurrency.Common;
 
