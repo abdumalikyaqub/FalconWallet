@@ -1,58 +1,48 @@
 ﻿using FalconWallet.API.Common.Persistence;
 using FalconWallet.API.Features.MultiCurrency.Common.Interfaces;
+using FalconWallet.API.Features.MultiCurrency.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace FalconWallet.API.Features.MultiCurrency.Common;
 
-public class CurrencyService(WalletDbContext walletDbContext):ICurrencyService
+public class CurrencyService(ICurrencyRepository currencyRepository) : ICurrencyService
 {
-    private readonly WalletDbContext _walletDbContext = walletDbContext;
-
-    public async Task<Currency> CreateAsync(string code,
-                                            string name,
-                                            decimal conversionRate,
-                                            CancellationToken cancellationToken = default)
+    public async Task<Currency> CreateAsync(string code, string name, decimal conversionRate,
+        CancellationToken cancellationToken = default)
     {
-        if (await _walletDbContext.Currencies.AnyAsync(x => x.Code.Equals(code), cancellationToken))
-        {
+        if (await currencyRepository.ExistsByCodeAsync(code))
             throw new CurrencyAlreadyExistException(code);
-        }
 
         if (conversionRate == 0)
-        {
             throw new InvalidConversionRateException();
-        }
 
         var newCurrency = Currency.Create(name, code, conversionRate);
 
-        await _walletDbContext.Currencies.AddAsync(newCurrency, cancellationToken);
-        await _walletDbContext.SaveChangesAsync(cancellationToken);
+        await currencyRepository.AddAsync(newCurrency);
+        await currencyRepository.SaveChangesAsync();
 
         return newCurrency;
     }
 
     public async Task UpdateConversionRateAsync(int currencyId,
-                                                decimal conversionRate,
-                                                CancellationToken cancellationToken = default)
+        decimal conversionRate,
+        CancellationToken cancellationToken = default)
     {
         if (conversionRate == 0)
-        {
             throw new InvalidConversionRateException();
-        }
 
-        Currency? currency = await _walletDbContext.Currencies.FirstOrDefaultAsync(x => x.Id.Equals(currencyId), cancellationToken);
+        Currency? currency =
+            await currencyRepository.GetByIdAsync(currencyId);
 
         if (currency is null)
-        {
             throw new CurrencyNotFoundException(currencyId);
-        }
 
         currency.UpdateConversionRate(conversionRate);
-        await _walletDbContext.SaveChangesAsync(cancellationToken);
+        await currencyRepository.SaveChangesAsync();
     }
 
     public async Task<bool> HasByIdAsync(int currencyId, CancellationToken cancellationToken = default)
     {
-        return await _walletDbContext.Currencies.AnyAsync(x => x.Id == currencyId, cancellationToken);
+        return await currencyRepository.HasByIdAsync(currencyId);
     }
 }

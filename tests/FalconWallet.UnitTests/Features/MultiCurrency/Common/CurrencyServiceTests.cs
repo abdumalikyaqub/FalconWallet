@@ -1,67 +1,44 @@
-using FalconWallet.API.Common.Persistence;
 using FalconWallet.API.Features.MultiCurrency.Common;
-using Microsoft.EntityFrameworkCore;
+using FalconWallet.API.Features.MultiCurrency.Repositories.Interfaces;
 using FluentAssertions;
+using Moq;
 
 namespace FalconWallet.UnitTests.Features.MultiCurrency.Common;
 
-public class CurrencyServiceTests 
+public class CurrencyServiceTests
 {
-    private readonly WalletDbContext _dbContext;
-    private readonly CurrencyService _service;
-
-    public CurrencyServiceTests()
-    {
-        _dbContext = CreateDbContext();
-        _service = new CurrencyService(_dbContext);
-    }
-
-    private static WalletDbContext CreateDbContext()
-    {
-        var options = new DbContextOptionsBuilder<WalletDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
-            .Options;
-
-        return new WalletDbContext(options);
-    }
-
     [Fact]
     public async Task CreateAsync_ShouldCreateCurrencySuccess()
     {
         //Arrange
-        const string code = "USD";
-        const string name = "USD Dollar";
-        const decimal rate = 1.1m;
+        var repoMock = new Mock<ICurrencyRepository>();
+        repoMock.Setup(x => x.ExistsByCodeAsync("USD"))
+            .ReturnsAsync(false);
         
+        var service = new CurrencyService(repoMock.Object);
+
         //Act
-        var action = await _service.CreateAsync(code, name, rate);
+        var result = await service.CreateAsync("USD", "dollar", 1.2m);
         
         //Assert
-        action.Should().NotBeNull();
-        action.Code.Should().Be(code);
-        action.Name.Should().Be(name);
-        action.ConversionRate.Should().Be(rate);
-
-        var saved = await _dbContext.Currencies
-            .FirstOrDefaultAsync(c => c.Code == code);
-        
-        saved.Should().NotBeNull();
-        saved!.Name.Should().Be(name);
-        saved.ConversionRate.Should().Be(rate);
+        result.Code.Should().Be("USD");
+        repoMock.Verify(x => x.AddAsync(It.IsAny<Currency>()), Times.Once);
+        repoMock.Verify(x => x.SaveChangesAsync(), Times.Once);
     }
 
     [Fact]
     public async Task CreateAsync_CurrencyAlreadyExists_ShowThrowException()
     {
         //Arrange
-        var exist = Currency.Create("USD", "USD",1.2m);
+        var repoMock = new Mock<ICurrencyRepository>();
+        repoMock.Setup(x => x.ExistsByCodeAsync("USD"))
+            .ReturnsAsync(true);
         
-        await _dbContext.Currencies.AddAsync(exist);
-        await _dbContext.SaveChangesAsync();
+        var service = new CurrencyService(repoMock.Object);
         
         //Act
-        var action = async () => await  _service.CreateAsync("USD", "Dollar", 2.2m);
-        
+        var action = async () => await service.CreateAsync("USD", "Dollar", 1.2m);
+
         //Assert
         await action.Should().ThrowAsync<CurrencyAlreadyExistException>();
     }
@@ -70,13 +47,13 @@ public class CurrencyServiceTests
     public async Task CreateAsync_InvalidConversionRate_ShowThrowException()
     {
         //Arrange
-        const string code = "USD";
-        const string name = "USD Dollar";
-        const decimal rate = 0m;
+        var repoMock = new Mock<ICurrencyRepository>();
+        
+        var service = new CurrencyService(repoMock.Object);
         
         //Act
-        var action = async () => await  _service.CreateAsync(code, name, rate);
-        
+        var action = async () => await service.CreateAsync("USD", "dollar", 0);
+
         //Assert
         await action.Should().ThrowAsync<InvalidConversionRateException>();
     }
@@ -87,32 +64,32 @@ public class CurrencyServiceTests
         //Arrange
         var currency = Currency.Create("USD", "USD", 1.2m);
         
-        await _dbContext.Currencies.AddAsync(currency);
-        await _dbContext.SaveChangesAsync();
+        var repoMock = new Mock<ICurrencyRepository>();
         
-        const decimal newConversationRate = 2.5m;
+        repoMock.Setup(x => x.GetByIdAsync(currency.Id))
+            .ReturnsAsync(currency);
+        
+        var service = new CurrencyService(repoMock.Object);
         
         //Act
-        await _service.UpdateConversionRateAsync(currency.Id, newConversationRate);
-        
+        await service.UpdateConversionRateAsync(currency.Id, 2.5m);
+
         //Assert
-        var updated = await _dbContext.Currencies
-            .FirstOrDefaultAsync(c => c.Id == currency.Id);
-        
-        updated.Should().NotBeNull();
-        updated!.ConversionRate.Should().Be(newConversationRate);
+        currency.ConversionRate.Should().Be(2.5m);
+        repoMock.Verify(x => x.SaveChangesAsync(), Times.Once);
     }
 
     [Fact]
     public async Task UpdateConversationRateAsync_InvalidConversationRate_ShowThrowException()
     {
         //Arrange
-        const int currencyId = 1;
-        const decimal newConversationRate = 0m;
+        var repoMock = new Mock<ICurrencyRepository>();
+        
+        var service = new CurrencyService(repoMock.Object);
         
         //Act
-        var action = async () => await _service.UpdateConversionRateAsync(currencyId, newConversationRate);
-        
+        var action = async () => await service.UpdateConversionRateAsync(1, 0);
+
         //Assert
         await action.Should().ThrowAsync<InvalidConversionRateException>();
     }
@@ -121,13 +98,15 @@ public class CurrencyServiceTests
     public async Task UpdateConversationRateAsync_CurrencyNotFound_ShowThrowException()
     {
         //Arrange
-        const int currencyId = 999;
+        var repoMock = new Mock<ICurrencyRepository>();
+
+        repoMock.Setup(x => x.GetByIdAsync(It.IsAny<int>())).ReturnsAsync((Currency?)null);
         
-        const decimal newConversationRate = 1.5m;
+        var service = new CurrencyService(repoMock.Object);
         
         //Acr
-        var action = async () => await _service.UpdateConversionRateAsync(currencyId, newConversationRate);
-        
+        var action = async () => await service.UpdateConversionRateAsync(999, 1.2m);
+
         //Assert
         await action.Should().ThrowAsync<CurrencyNotFoundException>();
     }
@@ -136,28 +115,31 @@ public class CurrencyServiceTests
     public async Task HasByIdAsync_ShouldReturnTrue()
     {
         //Arrange
-        var currency = Currency.Create("USD", "USD", 1.2m);
-        
-        await  _dbContext.Currencies.AddAsync(currency);
-        await _dbContext.SaveChangesAsync();
+        var repoMock = new Mock<ICurrencyRepository>();
+        repoMock.Setup(x => x.HasByIdAsync(1)).ReturnsAsync(true);
+
+        var service = new CurrencyService(repoMock.Object);
         
         //Act
-        var action = await _service.HasByIdAsync(currency.Id);
-        
+        var result = await service.HasByIdAsync(1);
+
         //Assert
-        action.Should().BeTrue();
+        result.Should().BeTrue();
     }
 
     [Fact]
     public async Task HasByIdAsync_ShouldReturnFalse()
     {
         //Arrange
-        const int currencyId = 999;
+        var repoMock = new Mock<ICurrencyRepository>();
+        repoMock.Setup(x => x.HasByIdAsync(999)).ReturnsAsync(false);
         
+        var service = new CurrencyService(repoMock.Object);
+
         //Act
-        var action = await _service.HasByIdAsync(currencyId);
-        
+        var result = await service.HasByIdAsync(999);
+
         //Assert
-        action.Should().BeFalse();
+        result.Should().BeFalse();
     }
 }
