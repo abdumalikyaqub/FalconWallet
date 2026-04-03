@@ -3,6 +3,8 @@ using FalconWallet.API.Common.Persistence.Interfaces;
 using FalconWallet.API.Features.MultiCurrency.Common;
 using FalconWallet.API.Features.MultiCurrency.Common.Interfaces;
 using FalconWallet.API.Features.MultiCurrency.CreateCurrency;
+using FalconWallet.API.Features.MultiCurrency.Repositories;
+using FalconWallet.API.Features.MultiCurrency.Repositories.Interfaces;
 using FalconWallet.API.Features.MultiCurrency.UpdateConversionRate;
 using FalconWallet.API.Features.Transactions.Common;
 using FalconWallet.API.Features.Transactions.Common.Interfaces;
@@ -30,6 +32,8 @@ builder.Services.AddDbContext<IWalletDbContext, WalletDbContext>(options =>
 builder.Services.AddScoped<ICurrencyService, CurrencyService>();
 builder.Services.AddScoped<IWalletService, WalletService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
+
+builder.Services.AddScoped<ICurrencyRepository, CurrencyRepository>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
