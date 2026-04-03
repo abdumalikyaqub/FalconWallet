@@ -14,12 +14,12 @@ public class CurrencyServiceTests
         var repoMock = new Mock<ICurrencyRepository>();
         repoMock.Setup(x => x.ExistsByCodeAsync("USD"))
             .ReturnsAsync(false);
-        
+
         var service = new CurrencyService(repoMock.Object);
 
         //Act
         var result = await service.CreateAsync("USD", "dollar", 1.2m);
-        
+
         //Assert
         result.Code.Should().Be("USD");
         repoMock.Verify(x => x.AddAsync(It.IsAny<Currency>()), Times.Once);
@@ -33,9 +33,9 @@ public class CurrencyServiceTests
         var repoMock = new Mock<ICurrencyRepository>();
         repoMock.Setup(x => x.ExistsByCodeAsync("USD"))
             .ReturnsAsync(true);
-        
+
         var service = new CurrencyService(repoMock.Object);
-        
+
         //Act
         var action = async () => await service.CreateAsync("USD", "Dollar", 1.2m);
 
@@ -48,9 +48,9 @@ public class CurrencyServiceTests
     {
         //Arrange
         var repoMock = new Mock<ICurrencyRepository>();
-        
+
         var service = new CurrencyService(repoMock.Object);
-        
+
         //Act
         var action = async () => await service.CreateAsync("USD", "dollar", 0);
 
@@ -63,14 +63,14 @@ public class CurrencyServiceTests
     {
         //Arrange
         var currency = Currency.Create("USD", "USD", 1.2m);
-        
+
         var repoMock = new Mock<ICurrencyRepository>();
-        
+
         repoMock.Setup(x => x.GetByIdAsync(currency.Id))
             .ReturnsAsync(currency);
-        
+
         var service = new CurrencyService(repoMock.Object);
-        
+
         //Act
         await service.UpdateConversionRateAsync(currency.Id, 2.5m);
 
@@ -84,9 +84,9 @@ public class CurrencyServiceTests
     {
         //Arrange
         var repoMock = new Mock<ICurrencyRepository>();
-        
+
         var service = new CurrencyService(repoMock.Object);
-        
+
         //Act
         var action = async () => await service.UpdateConversionRateAsync(1, 0);
 
@@ -101,9 +101,9 @@ public class CurrencyServiceTests
         var repoMock = new Mock<ICurrencyRepository>();
 
         repoMock.Setup(x => x.GetByIdAsync(It.IsAny<int>())).ReturnsAsync((Currency?)null);
-        
+
         var service = new CurrencyService(repoMock.Object);
-        
+
         //Acr
         var action = async () => await service.UpdateConversionRateAsync(999, 1.2m);
 
@@ -119,7 +119,7 @@ public class CurrencyServiceTests
         repoMock.Setup(x => x.HasByIdAsync(1)).ReturnsAsync(true);
 
         var service = new CurrencyService(repoMock.Object);
-        
+
         //Act
         var result = await service.HasByIdAsync(1);
 
@@ -133,7 +133,7 @@ public class CurrencyServiceTests
         //Arrange
         var repoMock = new Mock<ICurrencyRepository>();
         repoMock.Setup(x => x.HasByIdAsync(999)).ReturnsAsync(false);
-        
+
         var service = new CurrencyService(repoMock.Object);
 
         //Act
