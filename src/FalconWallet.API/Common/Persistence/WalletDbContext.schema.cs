@@ -1,8 +1,4 @@
-﻿using FalconWallet.API.Features.MultiCurrency.Common;
-using FalconWallet.API.Features.UserWallet.Common;
-using Microsoft.EntityFrameworkCore;
-
-namespace FalconWallet.API.Common.Persistence;
+﻿namespace FalconWallet.API.Common.Persistence;
 
 public static class WalletDbContextSchema
 {
